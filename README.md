@@ -28,7 +28,8 @@ minijson::buffer_context ctx(buffer, sizeof(buffer) - 1);
 
 ### `const_buffer_context`
 
-Similar to a `buffer_context`, but it does not modify the input buffer. `const_buffer_context` immediately allocates a buffer on the heap having the same size of the input buffer. It can throw `std::bad_alloc` only in the constructor, as no other memory allocations are performed after the object is created.
+Similar to a `buffer_context`, but it does not modify the input buffer. `const_buffer_context` immediately allocates a buffer on the heap having the same size of the input buffer. It can throw `std::bad_alloc` only in the constructor, as no other memory allocations are performed after the object is created.  
+The input buffer must stay valid for the entire lifetime of the `const_buffer_context` instance.
 
 ```
 const char* buffer = "{}";
