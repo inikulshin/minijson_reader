@@ -522,7 +522,7 @@ inline double parse_double(const char* str)
 
 static const size_t UTF16_ESCAPE_SEQ_LENGTH = 4;
 
-uint16_t parse_utf16_escape_sequence(const char* seq)
+inline uint16_t parse_utf16_escape_sequence(const char* seq)
 {
     for (size_t i = 0; i < UTF16_ESCAPE_SEQ_LENGTH; i++)
     {
@@ -1200,12 +1200,12 @@ public:
 
 } // namespace detail
 
-detail::dispatch_rule dispatch::operator<<(const char* field_name)
+inline detail::dispatch_rule dispatch::operator<<(const char* field_name)
 {
     return detail::dispatch_rule(*this, field_name);
 }
 
-detail::dispatch_rule dispatch::operator<<(const std::string& field_name)
+inline detail::dispatch_rule dispatch::operator<<(const std::string& field_name)
 {
     return operator<<(field_name.c_str());
 }
