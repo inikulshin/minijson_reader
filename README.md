@@ -88,12 +88,12 @@ Of course, in place of the lambda, you may use callbacks or function objects.
 
 ### `value`
 
-Field and element values are accessible through instances of the `minijson::value` class. Instances of this class outlive the stack frame of the callback they are passed to, but their lifetime is limited by the one of the underlying context, except for `buffer_context`, in which case `value` instances will stay valid until the buffer itself is destroyed.
+Field and element values are accessible through instances of the `minijson::value` class.
 
 `value` has the following public methods:
 
 - `minijson::value_type type()`: the type of the value. Possible types are `String`, `Number`, `Boolean`, `Object`, `Array`, and `Null`.
-- `const char* as_string()`: the value as a null-terminated UTF-8 encoded string. This  representation is always available except when `type()` is `Object` or `Array`, in which case an empty string is returned.
+- `const char* as_string()`: the value as a null-terminated UTF-8 encoded string. This representation is always available except when `type()` is `Object` or `Array`, in which case an empty string is returned. The string outlives the `value` instance, but its lifetime is limited by the one of the underlying context, except for `buffer_context`, in which case it will stay valid until the buffer itself is destroyed.
 - `long as_long()`: the value as a `long` integer. This representation is available when `type()` is `Number` and the number could be parsed by [`strtol`](http://en.cppreference.com/w/cpp/string/byte/strtol) without overflows, or when the type is `Boolean`, in which case  `1` or `0` are returned for `true` and `false` respectively. In all the other cases, `0` is returned.
 - `double as_double()`: the value as a double-precision floating-point number. This representation is available when `type()` is `Number` and the number could be parsed by [`strtod`](http://en.cppreference.com/w/cpp/string/byte/strtod) without overflows or underflows, or when the type is `Boolean`, in which case `non-zero` or `0.0` are returned for `true` and `false` respectively. In all the other cases, `0.0` is returned.
 - `bool as_bool()`: the value as a boolean. This method simply returns the value of `as_long()` cast to `bool`.
