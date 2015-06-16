@@ -177,7 +177,7 @@ class buffer_context MJR_FINAL : public detail::buffer_context_base
 public:
 
     explicit buffer_context(char* buffer, size_t length) :
-        buffer_context_base(buffer, buffer, length)
+        detail::buffer_context_base(buffer, buffer, length)
     {
     }
 }; // class buffer_context
@@ -187,7 +187,7 @@ class const_buffer_context MJR_FINAL : public detail::buffer_context_base
 public:
 
     explicit const_buffer_context(const char* buffer, size_t length) :
-        buffer_context_base(buffer, new char[length], length) // don't worry about leaks, buffer_context_base can't throw
+        detail::buffer_context_base(buffer, new char[length], length) // don't worry about leaks, buffer_context_base can't throw
     {
     }
 
@@ -468,7 +468,7 @@ inline long parse_long(const char* str, int base = 10)
     errno = 0; // reset errno
 
     char* endptr;
-    const long result = strtol(str, &endptr, base);
+    const long result = std::strtol(str, &endptr, base);
 
     std::swap(saved_errno, errno); // restore errno
 
@@ -504,7 +504,7 @@ inline double parse_double(const char* str)
     errno = 0; // reset errno
 
     char* endptr;
-    const double result = strtod(str, &endptr);
+    const double result = std::strtod(str, &endptr);
 
     std::swap(saved_errno, errno); // restore errno
 
