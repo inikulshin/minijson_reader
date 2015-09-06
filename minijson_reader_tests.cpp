@@ -35,21 +35,21 @@ void test_context_helper(Context& context)
     }
 
     ASSERT_EQ(0, context.read());
-    ASSERT_EQ(12, context.read_offset());
+    ASSERT_EQ(12U, context.read_offset());
     ASSERT_STREQ("World", context.write_buffer());
 
     ASSERT_EQ(minijson::detail::context_base::NESTED_STATUS_NONE, context.nested_status());
 
     context.begin_nested(minijson::detail::context_base::NESTED_STATUS_OBJECT);
     ASSERT_EQ(minijson::detail::context_base::NESTED_STATUS_OBJECT, context.nested_status());
-    ASSERT_EQ(1, context.nesting_level());
+    ASSERT_EQ(1U, context.nesting_level());
     context.begin_nested(minijson::detail::context_base::NESTED_STATUS_ARRAY);
     ASSERT_EQ(minijson::detail::context_base::NESTED_STATUS_ARRAY, context.nested_status());
-    ASSERT_EQ(2, context.nesting_level());
+    ASSERT_EQ(2U, context.nesting_level());
     context.end_nested();
-    ASSERT_EQ(1, context.nesting_level());
+    ASSERT_EQ(1U, context.nesting_level());
     context.end_nested();
-    ASSERT_EQ(0, context.nesting_level());
+    ASSERT_EQ(0U, context.nesting_level());
 
     context.reset_nested_status();
     ASSERT_EQ(minijson::detail::context_base::NESTED_STATUS_NONE, context.nested_status());
@@ -139,7 +139,7 @@ TEST(minijson_reader, parse_error)
         minijson::buffer_context buffer_context(NULL, 0);
         minijson::parse_error parse_error(buffer_context, minijson::parse_error::UNKNOWN);
 
-        ASSERT_EQ(0, parse_error.offset());
+        ASSERT_EQ(0U, parse_error.offset());
         ASSERT_EQ(minijson::parse_error::UNKNOWN, parse_error.reason());
         ASSERT_STREQ("Unknown parse error", parse_error.what());
     }
@@ -148,10 +148,10 @@ TEST(minijson_reader, parse_error)
         minijson::const_buffer_context const_buffer_context(buffer, sizeof(buffer) - 1);
         const_buffer_context.read();
         const_buffer_context.read();
-        ASSERT_EQ(2, const_buffer_context.read_offset());
+        ASSERT_EQ(2U, const_buffer_context.read_offset());
 
         minijson::parse_error parse_error(const_buffer_context, minijson::parse_error::UNKNOWN);
-        ASSERT_EQ(1, parse_error.offset());
+        ASSERT_EQ(1U, parse_error.offset());
         ASSERT_EQ(minijson::parse_error::UNKNOWN, parse_error.reason());
         ASSERT_STREQ("Unknown parse error", parse_error.what());
     }
@@ -160,16 +160,16 @@ TEST(minijson_reader, parse_error)
 TEST(minijson_reader_detail, utf8_quad)
 {
     minijson::detail::utf8_char utf8_quad;
-    ASSERT_EQ(0, utf8_quad[0]);
-    ASSERT_EQ(0, utf8_quad[1]);
-    ASSERT_EQ(0, utf8_quad[2]);
-    ASSERT_EQ(0, utf8_quad[3]);
+    ASSERT_EQ(0U, utf8_quad[0]);
+    ASSERT_EQ(0U, utf8_quad[1]);
+    ASSERT_EQ(0U, utf8_quad[2]);
+    ASSERT_EQ(0U, utf8_quad[3]);
 
     const minijson::detail::utf8_char utf8_quad1(0, 1, 2, 3);
-    ASSERT_EQ(0, utf8_quad1[0]);
-    ASSERT_EQ(1, utf8_quad1[1]);
-    ASSERT_EQ(2, utf8_quad1[2]);
-    ASSERT_EQ(3, utf8_quad1[3]);
+    ASSERT_EQ(0U, utf8_quad1[0]);
+    ASSERT_EQ(1U, utf8_quad1[1]);
+    ASSERT_EQ(2U, utf8_quad1[2]);
+    ASSERT_EQ(3U, utf8_quad1[3]);
 
     minijson::detail::utf8_char utf8_quad2;
 
@@ -182,18 +182,18 @@ TEST(minijson_reader_detail, utf8_quad)
 TEST(minijson_reader_detail, utf16_to_utf32)
 {
     // code points 0000 to D7FF and E000 to FFFF
-    ASSERT_EQ(0x000000, minijson::detail::utf16_to_utf32(0x0000, 0x0000));
-    ASSERT_EQ(0x000001, minijson::detail::utf16_to_utf32(0x0001, 0x0000));
-    ASSERT_EQ(0x00D7FE, minijson::detail::utf16_to_utf32(0xD7FE, 0x0000));
-    ASSERT_EQ(0x00D7FF, minijson::detail::utf16_to_utf32(0xD7FF, 0x0000));
-    ASSERT_EQ(0x00E000, minijson::detail::utf16_to_utf32(0xE000, 0x0000));
-    ASSERT_EQ(0x00FFFF, minijson::detail::utf16_to_utf32(0xFFFF, 0x0000));
+    ASSERT_EQ(0x000000u, minijson::detail::utf16_to_utf32(0x0000, 0x0000));
+    ASSERT_EQ(0x000001u, minijson::detail::utf16_to_utf32(0x0001, 0x0000));
+    ASSERT_EQ(0x00D7FEu, minijson::detail::utf16_to_utf32(0xD7FE, 0x0000));
+    ASSERT_EQ(0x00D7FFu, minijson::detail::utf16_to_utf32(0xD7FF, 0x0000));
+    ASSERT_EQ(0x00E000u, minijson::detail::utf16_to_utf32(0xE000, 0x0000));
+    ASSERT_EQ(0x00FFFFu, minijson::detail::utf16_to_utf32(0xFFFF, 0x0000));
 
     // code points 010000 to 10FFFF
-    ASSERT_EQ(0x010000, minijson::detail::utf16_to_utf32(0xD800, 0xDC00));
-    ASSERT_EQ(0x010001, minijson::detail::utf16_to_utf32(0xD800, 0xDC01));
-    ASSERT_EQ(0x10FFFE, minijson::detail::utf16_to_utf32(0xDBFF, 0xDFFE));
-    ASSERT_EQ(0x10FFFF, minijson::detail::utf16_to_utf32(0xDBFF, 0xDFFF));
+    ASSERT_EQ(0x010000u, minijson::detail::utf16_to_utf32(0xD800, 0xDC00));
+    ASSERT_EQ(0x010001u, minijson::detail::utf16_to_utf32(0xD800, 0xDC01));
+    ASSERT_EQ(0x10FFFEu, minijson::detail::utf16_to_utf32(0xDBFF, 0xDFFE));
+    ASSERT_EQ(0x10FFFFu, minijson::detail::utf16_to_utf32(0xDBFF, 0xDFFF));
 }
 
 TEST(minijson_reader_detail, utf16_to_utf32_invalid)
@@ -395,14 +395,14 @@ TEST(minijson_reader_detail, parse_double_invalid_restore_errno)
 
 TEST(minijson_reader_detail, parse_utf16_escape_sequence)
 {
-    ASSERT_EQ(0x0000, minijson::detail::parse_utf16_escape_sequence("0000"));
-    ASSERT_EQ(0x0001, minijson::detail::parse_utf16_escape_sequence("0001"));
-    ASSERT_EQ(0xA6BC, minijson::detail::parse_utf16_escape_sequence("A6BC"));
-    ASSERT_EQ(0xFFFE, minijson::detail::parse_utf16_escape_sequence("FFFE"));
-    ASSERT_EQ(0xFFFF, minijson::detail::parse_utf16_escape_sequence("FFFF"));
-    ASSERT_EQ(0xFFFE, minijson::detail::parse_utf16_escape_sequence("fffe"));
-    ASSERT_EQ(0xFFFF, minijson::detail::parse_utf16_escape_sequence("ffff"));
-    ASSERT_EQ(0xFFFF, minijson::detail::parse_utf16_escape_sequence("ffFf"));
+    ASSERT_EQ(0x0000u, minijson::detail::parse_utf16_escape_sequence("0000"));
+    ASSERT_EQ(0x0001u, minijson::detail::parse_utf16_escape_sequence("0001"));
+    ASSERT_EQ(0xA6BCu, minijson::detail::parse_utf16_escape_sequence("A6BC"));
+    ASSERT_EQ(0xFFFEu, minijson::detail::parse_utf16_escape_sequence("FFFE"));
+    ASSERT_EQ(0xFFFFu, minijson::detail::parse_utf16_escape_sequence("FFFF"));
+    ASSERT_EQ(0xFFFEu, minijson::detail::parse_utf16_escape_sequence("fffe"));
+    ASSERT_EQ(0xFFFFu, minijson::detail::parse_utf16_escape_sequence("ffff"));
+    ASSERT_EQ(0xFFFFu, minijson::detail::parse_utf16_escape_sequence("ffFf"));
 }
 
 TEST(minijson_reader_detail, parse_utf16_escape_sequence_invalid)
@@ -853,7 +853,7 @@ TEST(minijson_reader_detail, read_value_unquoted_invalid)
         exception_thrown = true;
 
         ASSERT_EQ(minijson::parse_error::INVALID_VALUE, parse_error.reason());
-        ASSERT_EQ(3, parse_error.offset());
+        ASSERT_EQ(3u, parse_error.offset());
         ASSERT_STREQ("Invalid value", parse_error.what());
     }
 
@@ -1158,7 +1158,7 @@ struct parse_array_multiple_elems_handler : check_on_destroy_handler
 
     ~parse_array_multiple_elems_handler()
     {
-        if (check_on_destroy) EXPECT_EQ(7, counter);
+        if (check_on_destroy) EXPECT_EQ(7U, counter);
     }
 
     void operator()(const minijson::value& v)
@@ -1211,7 +1211,7 @@ struct parse_array_nested_handler : check_on_destroy_handler
 
     ~parse_array_nested_handler()
     {
-        if (check_on_destroy) EXPECT_EQ(2, counter);
+        if (check_on_destroy) EXPECT_EQ(2U, counter);
     }
 
     void operator()(const minijson::value& v)
@@ -1595,10 +1595,10 @@ TEST(minijson_dispatch, present)
         <<"test3">> [&]{ handled[2] = true; }
         <<"test2">> [&]{ handled[3] = true; };
 
-    ASSERT_EQ(handled[0], false);
-    ASSERT_EQ(handled[1], true);
-    ASSERT_EQ(handled[2], false);
-    ASSERT_EQ(handled[3], false);
+    ASSERT_FALSE(handled[0]);
+    ASSERT_TRUE(handled[1]);
+    ASSERT_FALSE(handled[2]);
+    ASSERT_FALSE(handled[3]);
 }
 
 TEST(minijson_dispatch, absent)
@@ -1610,9 +1610,9 @@ TEST(minijson_dispatch, absent)
         <<"test2">> [&]{ handled[1] = true; }
         <<"test3">> [&]{ handled[2] = true; };
 
-    ASSERT_EQ(handled[0], false);
-    ASSERT_EQ(handled[1], false);
-    ASSERT_EQ(handled[2], false);
+    ASSERT_FALSE(handled[0]);
+    ASSERT_FALSE(handled[1]);
+    ASSERT_FALSE(handled[2]);
 }
 
 TEST(minijson_dispatch, absent_with_any_handler)
@@ -1627,10 +1627,10 @@ TEST(minijson_dispatch, absent_with_any_handler)
         <<"test3">> [&]{ handled[2] = true; }
         <<any>>     [&]{ handled[3] = true; };
 
-    ASSERT_EQ(handled[0], false);
-    ASSERT_EQ(handled[1], false);
-    ASSERT_EQ(handled[2], false);
-    ASSERT_EQ(handled[3], true);
+    ASSERT_FALSE(handled[0]);
+    ASSERT_FALSE(handled[1]);
+    ASSERT_FALSE(handled[2]);
+    ASSERT_TRUE(handled[3]);
 }
 
 TEST(minijson_dispatch, std_string)
@@ -1642,7 +1642,7 @@ TEST(minijson_dispatch, std_string)
     minijson::dispatch(x)
         <<x>> [&]{ handled = true; };
 
-    ASSERT_EQ(handled, true);
+    ASSERT_TRUE(handled);
 }
 
 TEST(minijson_dispatch, parse_object)
