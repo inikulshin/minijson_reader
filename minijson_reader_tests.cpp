@@ -617,7 +617,7 @@ TEST(minijson_reader, value_default_constructed)
     ASSERT_EQ(minijson::Null, value.type());
     ASSERT_STREQ("", value.as_string());
     ASSERT_EQ(0, value.as_long());
-    ASSERT_EQ(false, value.as_bool());
+    ASSERT_FALSE(value.as_bool());
     ASSERT_DOUBLE_EQ(0.0, value.as_double());
 }
 
@@ -627,7 +627,7 @@ TEST(minijson_reader, value_example)
     ASSERT_EQ(minijson::Number, value.type());
     ASSERT_STREQ("42.42", value.as_string());
     ASSERT_EQ(42, value.as_long());
-    ASSERT_EQ(true, value.as_bool());
+    ASSERT_TRUE(value.as_bool());
     ASSERT_DOUBLE_EQ(42.42, value.as_double());
 }
 
@@ -670,7 +670,7 @@ TEST(minijson_reader_detail, parse_unquoted_value_true)
     ASSERT_EQ(minijson::Boolean, value.type());
     ASSERT_STREQ("true",         value.as_string());
     ASSERT_EQ(1,                 value.as_long());
-    ASSERT_EQ(true,              value.as_bool());
+    ASSERT_TRUE(                 value.as_bool());
     ASSERT_DOUBLE_EQ(1.0,        value.as_double());
 }
 
@@ -684,7 +684,7 @@ TEST(minijson_reader_detail, parse_unquoted_value_false)
     ASSERT_EQ(minijson::Boolean, value.type());
     ASSERT_STREQ("false",        value.as_string());
     ASSERT_EQ(0,                 value.as_long());
-    ASSERT_EQ(false,             value.as_bool());
+    ASSERT_FALSE(                value.as_bool());
     ASSERT_DOUBLE_EQ(0.0,        value.as_double());
 }
 
@@ -698,7 +698,7 @@ TEST(minijson_reader_detail, parse_unquoted_value_null)
     ASSERT_EQ(minijson::Null, value.type());
     ASSERT_STREQ("null",      value.as_string());
     ASSERT_EQ(0,              value.as_long());
-    ASSERT_EQ(false,          value.as_bool());
+    ASSERT_FALSE(             value.as_bool());
     ASSERT_DOUBLE_EQ(0.0,     value.as_double());
 }
 
@@ -712,7 +712,7 @@ TEST(minijson_reader_detail, parse_unquoted_value_integer)
     ASSERT_EQ(minijson::Number, value.type());
     ASSERT_STREQ("42",          value.as_string());
     ASSERT_EQ(42,               value.as_long());
-    ASSERT_EQ(true,             value.as_bool());
+    ASSERT_TRUE(                value.as_bool());
     ASSERT_DOUBLE_EQ(42.0,      value.as_double());
 }
 
@@ -726,7 +726,7 @@ TEST(minijson_reader_detail, parse_unquoted_value_double)
     ASSERT_EQ(minijson::Number, value.type());
     ASSERT_STREQ("42.0e+76",    value.as_string());
     ASSERT_EQ(0,                value.as_long());
-    ASSERT_EQ(false,            value.as_bool());
+    ASSERT_FALSE(               value.as_bool());
     ASSERT_DOUBLE_EQ(42.0E+76,  value.as_double());
 }
 
@@ -752,7 +752,7 @@ TEST(minijson_reader_detail, read_value_object)
     ASSERT_EQ(minijson::Object, value.type());
     ASSERT_STREQ("",            value.as_string());
     ASSERT_EQ(0,                value.as_long());
-    ASSERT_EQ(false,            value.as_bool());
+    ASSERT_FALSE(               value.as_bool());
     ASSERT_DOUBLE_EQ(0.0,       value.as_double());
 
     ASSERT_EQ(0, ending_char);
@@ -771,7 +771,7 @@ TEST(minijson_reader_detail, read_value_array)
     ASSERT_EQ(minijson::Array, value.type());
     ASSERT_STREQ("",           value.as_string());
     ASSERT_EQ(0,               value.as_long());
-    ASSERT_EQ(false,           value.as_bool());
+    ASSERT_FALSE(              value.as_bool());
     ASSERT_DOUBLE_EQ(0.0,      value.as_double());
 
     ASSERT_EQ(0, ending_char);
@@ -790,7 +790,7 @@ TEST(minijson_reader_detail, read_value_quoted_string)
     ASSERT_EQ(minijson::String, value.type());
     ASSERT_STREQ("Hello world", value.as_string());
     ASSERT_EQ(0,                value.as_long());
-    ASSERT_EQ(false,            value.as_bool());
+    ASSERT_FALSE(               value.as_bool());
     ASSERT_DOUBLE_EQ(0.0,       value.as_double());
 
     ASSERT_EQ(0, ending_char);
@@ -809,7 +809,7 @@ TEST(minijson_reader_detail, read_value_quoted_string_empty)
     ASSERT_EQ(minijson::String, value.type());
     ASSERT_STREQ("",            value.as_string());
     ASSERT_EQ(0,                value.as_long());
-    ASSERT_EQ(false,            value.as_bool());
+    ASSERT_FALSE(               value.as_bool());
     ASSERT_DOUBLE_EQ(0.0,       value.as_double());
 
     ASSERT_EQ(0, ending_char);
@@ -828,7 +828,7 @@ TEST(minijson_reader_detail, read_value_unquoted)
     ASSERT_EQ(minijson::Boolean, value.type());
     ASSERT_STREQ("true",         value.as_string());
     ASSERT_EQ(1,                 value.as_long());
-    ASSERT_EQ(true,              value.as_bool());
+    ASSERT_TRUE(                 value.as_bool());
     ASSERT_DOUBLE_EQ(1.0,        value.as_double());
 
     ASSERT_EQ(',', ending_char);
@@ -944,9 +944,9 @@ struct parse_object_multiple_fields_handler : check_on_destroy_handler
         else if (strcmp(n, "floating_point") == 0)
             { h[2] = 1; ASSERT_EQ(minijson::Number,  v.type()); ASSERT_DOUBLE_EQ(4261826387162873618273687126387.0, v.as_double()); }
         else if (strcmp(n, "boolean_true") == 0)
-            { h[3] = 1; ASSERT_EQ(minijson::Boolean, v.type()); ASSERT_EQ(true, v.as_bool()); }
+            { h[3] = 1; ASSERT_EQ(minijson::Boolean, v.type()); ASSERT_TRUE(v.as_bool()); }
         else if (strcmp(n, "boolean_false") == 0)
-            { h[4] = 1; ASSERT_EQ(minijson::Boolean, v.type()); ASSERT_EQ(false, v.as_bool()); }
+            { h[4] = 1; ASSERT_EQ(minijson::Boolean, v.type()); ASSERT_FALSE(v.as_bool()); }
         else if (strcmp(n, "") == 0)
             { h[5] = 1; ASSERT_EQ(minijson::Null,    v.type()); }
         else if (strcmp(n, "\xc3\xA0\x01\x02" "a" "\xED\x9F\xBF\xEE\x80\x80\xEF\xBF\xBF" "b" "你" "\xF0\x90\x80\x80" "\xF4\x8F\xBF\xBF" "à") == 0)
@@ -1168,8 +1168,8 @@ struct parse_array_multiple_elems_handler : check_on_destroy_handler
         case 0:  ASSERT_EQ(minijson::String,   v.type()); ASSERT_STREQ("value", v.as_string());  break;
         case 1:  ASSERT_EQ(minijson::Number,   v.type()); ASSERT_EQ(42, v.as_long());            break;
         case 2:  ASSERT_EQ(minijson::Number,   v.type()); ASSERT_DOUBLE_EQ(42.0, v.as_double()); break;
-        case 3:  ASSERT_EQ(minijson::Boolean,  v.type()); ASSERT_EQ(true, v.as_bool());          break;
-        case 4:  ASSERT_EQ(minijson::Boolean,  v.type()); ASSERT_EQ(false, v.as_bool());         break;
+        case 3:  ASSERT_EQ(minijson::Boolean,  v.type()); ASSERT_TRUE(v.as_bool());              break;
+        case 4:  ASSERT_EQ(minijson::Boolean,  v.type()); ASSERT_FALSE(v.as_bool());             break;
         case 5:  ASSERT_EQ(minijson::Null,     v.type());                                        break;
         case 6:  ASSERT_EQ(minijson::String,   v.type()); ASSERT_STREQ("", v.as_string());       break;
         default: FAIL();
@@ -1693,7 +1693,7 @@ TEST(minijson_dispatch, parse_object)
     ASSERT_EQ(42, obj.field1);
     ASSERT_EQ("asd", obj.field2);
     ASSERT_DOUBLE_EQ(42.0, obj.nested.field1);
-    ASSERT_EQ(true, obj.nested.field2);
+    ASSERT_TRUE(obj.nested.field2);
     ASSERT_EQ(3, obj.array.size());
     ASSERT_EQ(1, obj.array[0]);
     ASSERT_EQ(2, obj.array[1]);
