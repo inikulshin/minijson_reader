@@ -1260,7 +1260,7 @@ struct parse_array_nested_handler : check_on_destroy_handler
 
             ~nested2_handler()
             {
-                if (check_on_destroy) EXPECT_EQ(2, counter);
+                if (check_on_destroy) EXPECT_EQ(2U, counter);
             }
 
             void operator()(const minijson::value& v)
@@ -1694,7 +1694,7 @@ TEST(minijson_dispatch, parse_object)
     ASSERT_EQ("asd", obj.field2);
     ASSERT_DOUBLE_EQ(42.0, obj.nested.field1);
     ASSERT_TRUE(obj.nested.field2);
-    ASSERT_EQ(3, obj.array.size());
+    ASSERT_EQ(3U, obj.array.size());
     ASSERT_EQ(1, obj.array[0]);
     ASSERT_EQ(2, obj.array[1]);
     ASSERT_EQ(3, obj.array[2]);
