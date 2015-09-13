@@ -1,5 +1,7 @@
 # minijson_reader
 
+[![Build Status](https://travis-ci.org/giacomodrago/minijson_reader.svg?branch=master)](https://travis-ci.org/giacomodrago/minijson_reader)
+
 ## Motivation and design
 
 When parsing JSON messages, most C/C++ libraries employ a DOM-based approach, i.e. they work by building an in-memory representation of object, and the client can then create/read/update/delete the properties of the object as needed, and most importantly access them in whatever order.  
