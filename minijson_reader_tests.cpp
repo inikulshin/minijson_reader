@@ -1583,6 +1583,50 @@ TEST(minijson_reader, parse_array_invalid)
         minijson::parse_error::EXCEEDED_NESTING_LIMIT, "Exceeded nesting limit (32)");
 }
 
+TEST(minijson_reader, parse_message_empty_object)
+{
+    char buffer[] = " {}";
+    minijson::buffer_context ctx(buffer, sizeof(buffer) - 1);
+
+    const minijson::value top_level_value = minijson::parse_message(ctx);
+    ASSERT_EQ(minijson::Object, top_level_value.type());
+
+    minijson::parse_object(ctx, parse_object_empty_handler);
+}
+
+TEST(minijson_reader, parse_message_empty_array)
+{
+    char buffer[] = "[\n]";
+    minijson::buffer_context ctx(buffer, sizeof(buffer) - 1);
+
+    const minijson::value top_level_value = minijson::parse_message(ctx);
+    ASSERT_EQ(minijson::Array, top_level_value.type());
+
+    minijson::parse_array(ctx, parse_array_empty_handler);
+}
+
+TEST(minijson_reader, parse_message_object)
+{
+    char buffer[] = "\n\n{\"\":{\"nested2\":{\"val1\":42,\"nested3\":[]}},\"val2\":42.0}";
+    minijson::const_buffer_context ctx(buffer, sizeof(buffer) - 1);
+
+    const minijson::value top_level_value = minijson::parse_message(ctx);
+    ASSERT_EQ(minijson::Object, top_level_value.type());
+
+    minijson::parse_object(ctx, parse_object_nested_handler<minijson::const_buffer_context>(ctx));
+}
+
+TEST(minijson_reader, parse_message_array)
+{
+    char buffer[] = "  \n  [[[42,{}]],42.0]";
+    minijson::buffer_context ctx(buffer, sizeof(buffer) - 1);
+
+    const minijson::value top_level_value = minijson::parse_message(ctx);
+    ASSERT_EQ(minijson::Array, top_level_value.type());
+
+    minijson::parse_array(ctx, parse_array_nested_handler<minijson::buffer_context>(ctx));
+}
+
 #if MJR_CPP11_SUPPORTED
 
 TEST(minijson_dispatch, present)
