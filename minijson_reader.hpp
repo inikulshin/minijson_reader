@@ -452,18 +452,8 @@ inline utf8_char utf16_to_utf8(uint16_t high, uint16_t low)
     return utf32_to_utf8(utf16_to_utf32(high, low));
 }
 
-// this exception is not to be propagated outside minijson
-struct number_parse_error
-{
-};
-
 inline long parse_long(const char* str, int base = 10)
 {
-    if ((str == NULL) || (*str == 0) || isspace(str[0])) // we don't accept empty strings or strings with leading spaces
-    {
-        throw number_parse_error();
-    }
-
     int saved_errno = errno; // save errno
     errno = 0; // reset errno
 
@@ -474,11 +464,11 @@ inline long parse_long(const char* str, int base = 10)
 
     if (*endptr != 0) // we didn't consume the whole string
     {
-        throw number_parse_error();
+        throw std::invalid_argument("strtol can't consume the whole string");
     }
-    else if ((saved_errno == ERANGE) && ((result == LONG_MIN) || (result == LONG_MAX))) // overflow
+    else if (saved_errno == ERANGE) // overflow
     {
-        throw number_parse_error();
+        throw std::out_of_range("strtol argument out of range");
     }
 
     return result;
@@ -486,20 +476,6 @@ inline long parse_long(const char* str, int base = 10)
 
 inline double parse_double(const char* str)
 {
-    if ((str == NULL) || (*str == 0)) // we don't accept empty strings
-    {
-        throw number_parse_error();
-    }
-
-    // we perform this check to reject hex numbers (supported in C++11) and string with leading spaces
-    for (const char* c = str; *c != 0; c++)
-    {
-        if (!(isdigit(*c) || (*c == '+') || (*c == '-') || (*c == '.') || (*c == 'e') || (*c == 'E')))
-        {
-            throw number_parse_error();
-        }
-    }
-
     int saved_errno = errno; // save errno
     errno = 0; // reset errno
 
@@ -510,11 +486,11 @@ inline double parse_double(const char* str)
 
     if (*endptr != 0) // we didn't consume the whole string
     {
-        throw number_parse_error();
+        throw std::invalid_argument("strtod can't consume the whole string");
     }
     else if (saved_errno == ERANGE) // underflow or overflow
     {
-        throw number_parse_error();
+        throw std::out_of_range("strtod argument out of range");
     }
 
     return result;
@@ -526,7 +502,7 @@ inline uint16_t parse_utf16_escape_sequence(const char* seq)
 {
     for (size_t i = 0; i < UTF16_ESCAPE_SEQ_LENGTH; i++)
     {
-        if (!isxdigit(seq[i]))
+        if (!isxdigit((unsigned char)seq[i]))
         {
             throw encoding_error();
         }
@@ -692,7 +668,7 @@ char read_unquoted_value(Context& context, char first_char = 0)
 
     char c;
 
-    while (((c = context.read()) != 0) && (c != ',') && (c != '}') && (c != ']') && !isspace(c))
+    while (((c = context.read()) != 0) && (c != ',') && (c != '}') && (c != ']') && !isspace((unsigned char)c))
     {
         context.write(c);
     }
@@ -725,16 +701,12 @@ private:
 
     value_type m_type;
     const char* m_buffer;
-    long m_long_value;
-    double m_double_value;
 
 public:
 
-    explicit value(value_type type = Null, const char* buffer = "", long long_value = 0, double double_value = 0.0) :
+    explicit value(value_type type, const char* buffer = "") :
         m_type(type),
-        m_buffer(buffer),
-        m_long_value(long_value),
-        m_double_value(double_value)
+        m_buffer(buffer)
     {
     }
 
@@ -750,17 +722,17 @@ public:
 
     long as_long() const
     {
-        return m_long_value;
+        return detail::parse_long(m_buffer);
     }
 
     bool as_bool() const
     {
-        return (m_long_value) ? true : false; // to avoid VS2013 warnings
+        return strcmp(m_buffer, "true") == 0;
     }
 
     double as_double() const
     {
-        return m_double_value;
+        return detail::parse_double(m_buffer);
     }
 }; // class value
 
@@ -774,39 +746,67 @@ value parse_unquoted_value(const Context& context)
 
     if (strcmp(buffer, "true") == 0)
     {
-        return value(Boolean, buffer, 1, 1.0);
+        return value(Boolean, buffer);
     }
     else if (strcmp(buffer, "false") == 0)
     {
-        return value(Boolean, buffer, 0, 0.0);
+        return value(Boolean, buffer);
     }
     else if (strcmp(buffer, "null") == 0)
     {
-        return value(Null, buffer, 0, 0.0);
+        return value(Null, buffer);
     }
     else
     {
-        long long_value = 0;
-        double double_value = 0.0;
+        auto p = buffer;
+        char c = *p;
 
-        try
-        {
-            long_value = parse_long(buffer);
-            double_value = long_value;
-        }
-        catch (const number_parse_error&)
-        {
-            try
-            {
-                double_value = parse_double(buffer);
-            }
-            catch (const number_parse_error&)
-            {
+        // minus integer         .integer         exponent
+        // '-'? (0|[1-9][0-9]*) (.[0-9][0-9]*)? ([eE][+-]?[0-9][0-9]*)?
+
+        // '-'?
+        if (c == '-')
+            c = *++p;
+
+        // '0'
+        if (c == '0')
+            c = *++p;
+        // '[1-9]'
+        else if ('1' <= c && c <= '9')
+            // '[0-9]*'
+            do { c = *++p; } while ('0' <= c && c <= '9');
+        else
+            throw parse_error(context, parse_error::INVALID_VALUE);
+
+        // '.'
+        if (c == '.') {
+            c = *++p;
+            // [0-9]
+            if ('0' <= c && c <= '9')
+                // '[0-9]*'
+                do { c = *++p; } while ('0' <= c && c <= '9');
+            else
                 throw parse_error(context, parse_error::INVALID_VALUE);
-            }
         }
 
-        return value(Number, buffer, long_value, double_value);
+        // [eE]
+        if (c == 'e' || c == 'E') {
+            c = *++p;
+            // [+-]?
+            if (c == '+' || c == '-')
+                c = *++p;
+            // [0-9]
+            if ('0' <= c && c <= '9')
+                // '[0-9]*'
+                do { c = *++p; } while ('0' <= c && c <= '9');
+            else
+                throw parse_error(context, parse_error::INVALID_VALUE);
+        }
+
+        if (c != '\0')
+            throw parse_error(context, parse_error::INVALID_VALUE);
+
+        return value(Number, buffer);
     }
 }
 
@@ -924,7 +924,7 @@ void parse_object(Context& context, Handler handler)
 
         must_read = true;
 
-        if (isspace(c)) // skip whitespace
+        if (isspace((unsigned char)c)) // skip whitespace
         {
             continue;
         }
@@ -1038,7 +1038,7 @@ void parse_array(Context& context, Handler handler)
 
         must_read = true;
 
-        if (isspace(c)) // skip whitespace
+        if (isspace((unsigned char)c)) // skip whitespace
         {
             continue;
         }
